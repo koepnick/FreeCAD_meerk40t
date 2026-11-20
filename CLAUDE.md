@@ -71,20 +71,25 @@ freecadcmd tests/fc/run_all.py
 # macOS: /Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd tests/fc/run_all.py
 
 # Lint
-ruff check laserbench tests
+ruff check .
 
-# Install the workbench for manual testing (symlink into FreeCAD's Mod dir)
+# Install for manual testing: either clone straight into FreeCAD's Mod dir
+# (e.g. ~/.local/share/FreeCAD/v1-1/Mod/FreeCAD_meerk40t), or symlink a checkout there:
 python tools/dev_install.py
 ```
 
 ## Repository layout
 
+The **repository root is the FreeCAD addon folder** (D-014): FreeCAD loads `Init.py` and
+`InitGui.py` from the root and puts the root on `sys.path`, so `import laserbench` works.
+
 ```
-laserbench/            # the workbench package (goes in FreeCAD's Mod/ dir)
+Init.py                # non-GUI init (keep trivial)
+InitGui.py             # workbench registration (lazy imports only)
+package.xml            # Addon Manager metadata
+laserbench/            # the Python package
   __init__.py
-  Init.py              # non-GUI init
-  InitGui.py           # workbench registration
-  package.xml          # Addon Manager metadata
+  api.py               # public scripting facade (FR-080)
   core/                # PURE PYTHON — no FreeCAD imports
   fc/                  # FreeCAD geometry adapters (Part/OCC)
   objects/             # FeaturePython proxies (Job, Operation, Machine ref)
@@ -92,10 +97,11 @@ laserbench/            # the workbench package (goes in FreeCAD's Mod/ dir)
   resources/           # icons, default presets JSON, UI files
 tests/
   core/                # pytest
-  fc/                  # freecadcmd-run tests
+  fc/                  # freecadcmd-run tests (run_all.py)
   fixtures/            # scripts that BUILD .FCStd fixtures (don't commit binaries)
 docs/
 tools/
+pyproject.toml         # ruff/pytest config only; not a pip package
 ```
 
 ## Style

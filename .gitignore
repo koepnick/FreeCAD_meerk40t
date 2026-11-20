@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+# Fixtures are built by scripts in tests/fixtures; don't commit binaries.
+*.FCStd
+*.FCBak
+/out/

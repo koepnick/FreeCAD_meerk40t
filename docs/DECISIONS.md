@@ -21,6 +21,7 @@ Status values: **DECIDED** · **PROPOSED** (default unless the owner objects) ·
 | D-011 | OPEN | Project name |
 | D-012 | OPEN | Minimum FreeCAD version and machine dimensions |
 | D-013 | PROPOSED | Projection API choice (finalised by task G-02) |
+| D-014 | DECIDED | Repository root is the FreeCAD addon folder |
 
 ---
 
@@ -76,7 +77,19 @@ MeerK40t code might be borrowed later (MeerK40t is MIT). **Owner decides.**
 Owner to supply: FreeCAD version on the Mac and on Linux; galvo field size (lens-dependent);
 CO2 bed size and origin corner; MeerK40t version.
 
+*Known so far (2026-11-20):* the owner's Linux checkout lives in
+`~/.local/share/FreeCAD/v1-1/Mod/`, so Linux runs **FreeCAD 1.1**. `package.xml` keeps
+`freecadmin` at 1.0.0 (NFR-006) until the Mac version is known. Still needed: the Mac FreeCAD
+version, both machine sizes, the CO2 origin corner, and the MeerK40t version.
+
 ### D-013 Projection API — PROPOSED
 Start with `Part.Shape.slice` (Section) and face wires (Face). For Direction, evaluate
 `TechDraw.projectEx` against `Part.Shape.makeParallelProjection` in task G-02 for robustness
 on curved solids. Record the result here.
+
+### D-014 Repository layout — DECIDED
+The repository root is the addon folder: `Init.py`, `InitGui.py` and `package.xml` sit at the
+root, and the code is the `laserbench/` package inside it. Docs move under `docs/`.
+*Why:* the owner clones the repo directly into FreeCAD's `Mod/` folder, and the Addon Manager
+also installs a repository's root as the addon folder (FR-002). `tools/dev_install.py` remains
+for checkouts elsewhere.
