@@ -99,8 +99,10 @@ class TestResolveSources(unittest.TestCase):
         self.assertBoundsEqual(sketch_shape, (0, 50, 0, 20, 60, 0))
 
         # A face picked on the Pad feature is also global.
-        top = max(pad.Shape.Faces, key=lambda f: f.CenterOfMass.z)
-        name = f"Face{pad.Shape.Faces.index(top) + 1}"
+        # Shape.Faces builds fresh wrappers on every access, so pick by index, not identity.
+        faces = pad.Shape.Faces
+        top = max(range(len(faces)), key=lambda i: faces[i].CenterOfMass.z)
+        name = f"Face{top + 1}"
         [(_, _, face)] = resolve_sources([(pad, [name])])
         self.assertBoundsEqual(face, (0, 50, 3, 20, 60, 3))
 
