@@ -29,9 +29,12 @@ class LaserBenchWorkbench(FreeCADGui.Workbench):
     Icon = _icon_path()
 
     def Initialize(self) -> None:
-        # Commands are registered here in later tasks (W-04, W-07).
-        self.appendToolbar("LaserBench", [])
-        self.appendMenu("LaserBench", [])
+        # Imported here, not at file level, so a broken piece can't stop FreeCAD starting.
+        from laserbench.gui import commands
+
+        names = commands.register_commands()
+        self.appendToolbar("LaserBench", names)
+        self.appendMenu("LaserBench", names)
 
     def Activated(self) -> None:
         pass
