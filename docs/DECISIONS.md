@@ -115,7 +115,7 @@ against the owner's version first.
 - **Face:** the face's `OuterWire` and hole wires, laid flat by the smallest rotation that maps
   the face normal onto the job-plane normal (no rotation when parallel or anti-parallel, so a
   bottom face is not mirrored).
-- **Direction:** OCC hidden-line removal through `Part.HLRBRep_Algo` + `Part.HLRToShape`,
+- **Direction:** OCC hidden-line removal through `Part.HLRBRep.Algo` + `Part.HLRBRep.HLRToShape`,
   keeping visible sharp edges and visible silhouettes. Smooth (tangent) edges are dropped since
   they are not cut lines. HLR keeps superimposed lines (a pocket's rim and floor), so edges are
   merged with a fuzzy general fuse (1e-4 mm) before chaining into wires. `direction` points from

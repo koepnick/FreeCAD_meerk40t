@@ -208,12 +208,12 @@ def _project(shape: Part.Shape, direction: FreeCAD.Vector) -> list[Part.Wire]:
     viewed = shape.copy()
     viewed.Placement = FreeCAD.Placement(FreeCAD.Vector(), rotation).multiply(viewed.Placement)
 
-    algo = Part.HLRBRep_Algo()
+    algo = Part.HLRBRep.Algo()
     algo.add(viewed)
     algo.setProjector(Origin=(0, 0, 0), ZDir=(0, 0, 1), XDir=(1, 0, 0))
     algo.update()
     algo.hide()
-    hlr = Part.HLRToShape(algo)
+    hlr = Part.HLRBRep.HLRToShape(algo)
     edges: list[Part.Edge] = []
     for part in (hlr.vCompound(), hlr.outLineVCompound()):
         if part is not None and not part.isNull():
