@@ -116,18 +116,7 @@ def wires_to_regions(wires: list[Part.Wire], tolerance: float = DEFAULT_TOLERANC
     are skipped here; validation reports them.
     """
     closed = [w for w in wires if w.isClosed()]
-    faces = [Part.Face(w) for w in closed]
-    probes = [_probe_point(w) for w in closed]
-
-    def contains(i: int, j: int) -> bool:
-        return i != j and faces[i].isInside(probes[j], _INSIDE_TOL, True)
-
-    parents: list[int | None] = []
-    depths: list[int] = []
-    for j in range(len(closed)):
-        around = [i for i in range(len(closed)) if contains(i, j)]
-        depths.append(len(around))
-        parents.append(min(around, key=lambda i: faces[i].Area) if around else None)
+    depths, parents = nesting(closed)
 
     regions: dict[int, IRRegion] = {}
     order: list[int] = []
@@ -140,6 +129,24 @@ def wires_to_regions(wires: list[Part.Wire], tolerance: float = DEFAULT_TOLERANC
         if depths[j] % 2 == 1 and parent is not None:
             regions[parent].holes.append(wire_to_path(w, tolerance))
     return [regions[i] for i in order]
+
+
+def nesting(closed: list[Part.Wire]) -> tuple[list[int], list[int | None]]:
+    """Nesting depth of each closed wire, and the index of the smallest loop around it.
+
+    Depth 0 is an outer boundary, 1 a hole, 2 an island inside a hole, and so on.
+    Shared with kerf compensation, which uses the same parity rule (FR-050).
+    """
+    faces = [Part.Face(w) for w in closed]
+    probes = [_probe_point(w) for w in closed]
+    depths: list[int] = []
+    parents: list[int | None] = []
+    for j in range(len(closed)):
+        around = [i for i in range(len(closed))
+                  if i != j and faces[i].isInside(probes[j], _INSIDE_TOL, True)]
+        depths.append(len(around))
+        parents.append(min(around, key=lambda i: faces[i].Area) if around else None)
+    return depths, parents
 
 
 def _probe_point(wire: Part.Wire) -> FreeCAD.Vector:
