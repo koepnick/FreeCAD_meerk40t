@@ -1,4 +1,4 @@
-# CLAUDE.md — LaserBench (working name)
+# CLAUDE.md — LaserBench
 
 Every agent on this project reads this file first. Keep it short and current.
 The coordinator owns it; teammates propose changes via the coordinator.
