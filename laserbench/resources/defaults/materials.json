@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "materials": [
+    {
+      "id": "ply3",
+      "machine_id": "co2-mf1624",
+      "name": "Birch ply 3 mm (starting point, test first)",
+      "thickness": 3.0,
+      "kerf": 0.2,
+      "settings": {
+        "cut": {"power": 65, "speed": 20, "passes": 1},
+        "score": {"power": 20, "speed": 200, "passes": 1},
+        "fill": {"power": 30, "speed": 300, "passes": 1, "hatch_interval": 0.1}
+      }
+    },
+    {
+      "id": "acrylic3",
+      "machine_id": "co2-mf1624",
+      "name": "Cast acrylic 3 mm (starting point, test first)",
+      "thickness": 3.0,
+      "kerf": 0.15,
+      "settings": {
+        "cut": {"power": 60, "speed": 12, "passes": 1},
+        "score": {"power": 15, "speed": 250, "passes": 1},
+        "fill": {"power": 25, "speed": 350, "passes": 1, "hatch_interval": 0.1}
+      }
+    },
+    {
+      "id": "anodised-al",
+      "machine_id": "fiber-50w",
+      "name": "Anodised aluminium mark (starting point, test first)",
+      "thickness": 0.0,
+      "kerf": 0.03,
+      "settings": {
+        "score": {"power": 30, "speed": 1000, "passes": 1, "frequency": 30},
+        "fill": {"power": 30, "speed": 1000, "passes": 1, "frequency": 30,
+                 "hatch_interval": 0.05}
+      }
+    }
+  ]
+}
