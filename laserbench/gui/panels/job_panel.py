@@ -10,6 +10,7 @@ import FreeCADGui
 from PySide import QtGui
 
 from laserbench.core import presets
+from laserbench.gui.viewproviders import attach_view_provider
 from laserbench.objects import job as job_mod
 
 translate = FreeCAD.Qt.translate
@@ -79,6 +80,7 @@ class CreateJobPanel:
             name = self.name.text().strip() or "LaserJob"
             self.created = job_mod.make_job(self.doc, machine_id, material_id, name="LaserJob")
             self.created.Label = name
+            attach_view_provider(self.created)
         finally:
             self.doc.commitTransaction()
         self.doc.recompute()
