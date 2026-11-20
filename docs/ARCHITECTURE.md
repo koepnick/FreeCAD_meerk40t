@@ -27,7 +27,8 @@ Status: **Draft v0.1** · Owner: coordinator
 ├─────────────────────────────────────────────────────────────┤
 │ core/       ir · settings merge · ordering · dedupe ·       │  PURE PYTHON
 │             validate · hatch · export_svg/json/dxf · presets │  (stdlib only)
-│             handoff (subprocess)                             │
+│             handoff (subprocess) · coords · pipeline ·       │
+│             fsutil · layout                                  │
 └─────────────────────────────────────────────────────────────┘
 api.py — public scripting facade across all layers (FR-080)
 ```
@@ -47,7 +48,7 @@ LaserOperation.execute(obj)
   5. convert to IR paths (lines/arcs/polylines)        fc/to_ir.py
   6. store IR fragment on obj (hidden string property) + set obj.Shape for preview
 
-LaserJob.execute(obj)
+LaserJob.execute(obj)                                   (steps 2-5: core/pipeline.py)
   1. collect enabled operations' IR fragments in Order
   2. merge settings: preset ⊕ operation overrides       core/settings.py
   3. dedupe (FR-054) → order (FR-053) → hatch? (FR-052) core/
