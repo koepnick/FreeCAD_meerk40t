@@ -98,9 +98,10 @@ Done: workbench appears, lazy imports, no load-time errors.
 Done: properties per ARCHITECTURE §4.1, `execute` wired to the fc pipeline, restore without
 the workbench (NFR-006).
 
-**W-03 LaserJob object**: Depends W-02, K-01..K-05 · FR-030–033 · `objects/job.py`
+**W-03 LaserJob object**: Depends W-02, K-01..K-05, P-01 · FR-030–033 · `objects/job.py`
 Done: aggregates operations, runs the core pipeline, stores IR + ValidationSummary, and
-recomputes on source change.
+recomputes on source change. (P-01 added 2026-11-20: the job resolves its machine and
+material ids through `core/presets.py`.)
 
 **W-04 Commands + task panels**: Depends W-03 · FR-030, FR-032, FR-040 · `gui/commands.py`, `gui/panels/*`
 Done: Create Job (choose machine/material), Add Operation from the selection (type,
@@ -171,7 +172,7 @@ C-02 ─┘        ├─ K-06 (needs K-02) ─ Q-03  │
                │               └─ **G-04 ─ W-02 ─ W-03** ─┬─ W-04, W-06, W-08 ─ Q-02 ─ Q-04
                │                    └─ G-05 ─ W-05         └─ W-07 (needs K-06, K-07, P-03)
                ├─ P-03
-C-01 ─ P-01 ─ P-02, P-04
+C-01 ─ P-01 ─ P-02, P-04, W-03
 C-02 ─ W-01, Q-01
 ```
 The critical path runs through geometry (G-01→G-04) into the objects (W-02→W-03). Start
