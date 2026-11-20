@@ -9,6 +9,7 @@ import FreeCAD
 import FreeCADGui
 from PySide import QtGui
 
+from laserbench.gui.viewproviders import attach_view_provider
 from laserbench.objects import job as job_mod
 from laserbench.objects import operation as op_mod
 
@@ -95,6 +96,7 @@ class AddOperationPanel:
         try:
             op = op_mod.make_operation(self.doc, self.op_type.currentText(), self.sources)
             op.Label = f"{self.op_type.currentText()}"
+            attach_view_provider(op)
             op.ProjectionMode = self.projection.currentText()
             op.KerfMode = self.kerf_mode.currentText()
             job_mod.add_operation(job, op)
