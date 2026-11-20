@@ -20,7 +20,7 @@ Status values: **DECIDED** · **PROPOSED** (default unless the owner objects) ·
 | D-010 | DECIDED | Licence |
 | D-011 | DECIDED | Project name |
 | D-012 | DECIDED | Minimum FreeCAD version and machine dimensions |
-| D-013 | PROPOSED | Projection API choice (finalised by task G-02) |
+| D-013 | DECIDED | Projection API choice (finalised by task G-02) |
 | D-014 | DECIDED | Repository root is the FreeCAD addon folder |
 
 ---
@@ -111,10 +111,26 @@ files. Q-03 confirms this on the gantry device profile.
 exact build in Help → About. The latest release at the time of writing is 0.9.9000. Q-03 tests
 against the owner's version first.
 
-### D-013 Projection API — PROPOSED
-Start with `Part.Shape.slice` (Section) and face wires (Face). For Direction, evaluate
-`TechDraw.projectEx` against `Part.Shape.makeParallelProjection` in task G-02 for robustness
-on curved solids. Record the result here.
+### D-013 Projection API — DECIDED
+- **Face:** the face's `OuterWire` and hole wires, laid flat by the smallest rotation that maps
+  the face normal onto the job-plane normal (no rotation when parallel or anti-parallel, so a
+  bottom face is not mirrored).
+- **Direction:** OCC hidden-line removal through `Part.HLRBRep.Algo` + `Part.HLRBRep.HLRToShape`,
+  keeping visible sharp edges and visible silhouettes. Smooth (tangent) edges are dropped since
+  they are not cut lines. HLR keeps superimposed lines (a pocket's rim and floor), so exact
+  duplicates (same endpoints, midpoint and length to 0.1 µm) are dropped before chaining into
+  wires. HLR's output edges lack a full 3D representation (`copy()` empties them
+  and a boolean fuse crashed OCC 7.9), so each is rebuilt from its curve first. `direction` points from
+  the model towards the viewer, as in TechDraw; the default is the job-plane normal.
+- **Section:** `Part.Shape.slice` at the section height, then dropped to z = 0.
+- **Edge-only shapes** (sketches, edge sources) are always flattened in their own plane,
+  whatever the mode (FR-043). Collinear sketches take the plane from their Placement.
+
+*Why:* `Part.makeParallelProjection` projects a wire onto a face, so it cannot handle solids.
+`TechDraw.projectEx` runs the same OCC HLR algorithm but fixes the projection X axis itself
+and pulls in the TechDraw module; calling HLR from `Part` lets us choose the axes so a top view
+maps one-to-one onto the job plane. Verified in CI (freecadcmd, FreeCAD 1.1) on a box with a
+pocket, a cylinder with a hole, and a rotated sketch (`tests/fc/test_extract_projection.py`).
 
 ### D-014 Repository layout — DECIDED
 The repository root is the addon folder: `Init.py`, `InitGui.py` and `package.xml` sit at the
