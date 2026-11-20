@@ -11,6 +11,9 @@ Task ID prefixes: `C` coordinator · `K` core-dev · `G` geometry-dev · `W` wor
 
 ## Phase 0: Foundations (sequential, coordinator-led)
 
+**Status: done (2026-11-20).** C-01 and C-02 in PR #1, C-03 in the interface-stubs PR.
+Every stub raises `NotImplementedError("<task id>")`, so a grep for a task id finds its stubs.
+
 Nothing parallel starts until Phase 0 is merged. This is what stops agents from diverging.
 
 ### C-01 Freeze the IR contract
