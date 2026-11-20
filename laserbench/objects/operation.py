@@ -119,6 +119,7 @@ class LaserOperation:
         """
         op_id = obj.Name
         job_plane, kerf_value = _job_context(obj)
+        context = _context_key(job_plane, kerf_value)
         issues: list[IRIssue] = []
         wires: list[Part.Wire] = []
         failures = 0
@@ -147,10 +148,10 @@ class LaserOperation:
         except Exception as exc:  # noqa: BLE001 - recorded, then raised as a hard error
             issues.append(IRIssue(code="GEOMETRY_ERROR", operation_id=op_id,
                                   message=f"{obj.Label}: {exc}"))
-            _store(obj, self._fragment(obj, []), issues, Part.Shape())
+            _store(obj, self._fragment(obj, []), issues, Part.Shape(), context)
             raise FreeCAD.Base.FreeCADError(f"{obj.Label}: {exc}") from exc
 
-        _store(obj, fragment, issues, _preview(wires, job_plane))
+        _store(obj, fragment, issues, _preview(wires, job_plane), context)
         if sources and failures == _count_links(sources):
             raise FreeCAD.Base.FreeCADError(
                 f"{obj.Label}: none of its sources could be used ({issues[0].message})")
@@ -238,6 +239,27 @@ def _job_context(obj: FreeCAD.DocumentObject) -> tuple[FreeCAD.Placement, float]
     return plane, float(getattr(kerf_prop, "Value", kerf_prop or 0.0))
 
 
+def _context_key(plane: FreeCAD.Placement, kerf: float) -> list[float]:
+    """What a fragment depends on from its job: kerf and the job plane (rounded)."""
+    return [round(v, 9) for v in (kerf, *plane.toMatrix().A)]
+
+
+def job_context_key(job: FreeCAD.DocumentObject | None) -> list[float]:
+    """The context key operations of ``job`` should have been built with."""
+    if job is None:
+        return _context_key(FreeCAD.Placement(), 0.0)
+    plane = getattr(job, "JobPlane", None) or FreeCAD.Placement()
+    kerf_prop = getattr(job, "Kerf", None)
+    return _context_key(plane, float(getattr(kerf_prop, "Value", kerf_prop or 0.0)))
+
+
+def fragment_context(obj: FreeCAD.DocumentObject) -> list[float] | None:
+    """The context key stored with the operation's fragment, or None if there is none."""
+    if not obj.IRFragment:
+        return None
+    return json.loads(obj.IRFragment).get("context")
+
+
 def find_job(obj: FreeCAD.DocumentObject) -> FreeCAD.DocumentObject | None:
     """The LaserJob whose Operations list contains ``obj``, if any."""
     for parent in obj.InList:
@@ -273,9 +295,10 @@ def _preview(wires: list[Part.Wire], job_plane: FreeCAD.Placement) -> Part.Shape
 
 
 def _store(obj: FreeCAD.DocumentObject, fragment: IROperation, issues: list[IRIssue],
-           shape: Part.Shape) -> None:
+           shape: Part.Shape, context: list[float]) -> None:
     obj.IRFragment = json.dumps({
         "fragment_version": FRAGMENT_VERSION,
+        "context": context,
         "operation": fragment.to_dict(),
         "issues": [i.to_dict() for i in issues],
     }, separators=(",", ":"))
