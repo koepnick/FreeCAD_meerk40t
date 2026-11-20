@@ -35,20 +35,20 @@ jobs:
       - run: conda install -y "freecad=1.1"
       - run: freecadcmd tests/fc/run_all.py
       - name: GUI smoke tests (xvfb)
+        # No `exit` on the success path: in this login shell (bash -el) an explicit exit runs
+        # ~/.bash_logout, whose clear_console fails without a terminal and turns 0 into 1.
         run: |
           command -v xvfb-run || (sudo apt-get update && sudo apt-get install -y xvfb)
           rm -f tests/gui/result.txt
           status=0
-          timeout 600 xvfb-run -a freecad tests/gui/run_all.py || status=$?
+          timeout 300 xvfb-run -a freecad tests/gui/run_all.py || status=$?
           echo "GUI runner exit status: $status"
           # The GUI swallows stdout, so the runner writes its report to a file. A crash
           # before the report is written must fail the step, not pass it silently.
           if [ ! -s tests/gui/result.txt ]; then
             echo "tests/gui/result.txt missing or empty: the GUI test runner crashed"
-            exit 1
+            false
           fi
           cat tests/gui/result.txt
-          tail -c 40 tests/gui/result.txt | od -c
-          set -x
-          grep -qx "OK" tests/gui/result.txt || exit 1
-          exit $status
+          grep -qx "OK" tests/gui/result.txt
+          [ "$status" -eq 0 ]
