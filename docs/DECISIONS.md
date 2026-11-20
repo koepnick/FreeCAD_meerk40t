@@ -77,10 +77,10 @@ MeerK40t code might be borrowed later (MeerK40t is MIT). **Owner decides.**
 Owner to supply: FreeCAD version on the Mac and on Linux; galvo field size (lens-dependent);
 CO2 bed size and origin corner; MeerK40t version.
 
-*Known so far (2026-11-20):* the owner's Linux checkout lives in
-`~/.local/share/FreeCAD/v1-1/Mod/`, so Linux runs **FreeCAD 1.1**. `package.xml` keeps
-`freecadmin` at 1.0.0 (NFR-006) until the Mac version is known. Still needed: the Mac FreeCAD
-version, both machine sizes, the CO2 origin corner, and the MeerK40t version.
+*Answered so far (2026-11-20):* the owner runs **FreeCAD 1.1.4 on every machine** (Mac and
+Linux). LaserBench is developed and CI-tested against 1.1.x. `package.xml` keeps `freecadmin`
+at 1.0.0 because NFR-006 promises FreeCAD ≥ 1.0; 1.0 is supported but not CI-tested.
+Still needed: galvo field size, CO2 bed size and origin corner, and the MeerK40t version.
 
 ### D-013 Projection API — PROPOSED
 Start with `Part.Shape.slice` (Section) and face wires (Face). For Direction, evaluate
