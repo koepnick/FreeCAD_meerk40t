@@ -85,6 +85,52 @@ class TestKerf(unittest.TestCase):
         self.assertEqual(issue.operation_id, "op7")
         self.assertAlmostEqual(issue.location[0], 25, delta=TOL)
 
+    def test_several_tiny_round_holes_do_not_crash(self) -> None:
+        """Regression: OCC segfaults offsetting a collapsing circle, and FreeCAD survives
+        only the first such crash per process. Three in one call, twice over, must all be
+        reported as KERF_COLLAPSE (circles never reach OCC's offset)."""
+        wires = [_square(0, 0, 50), *(_circle(10 * i + 5, 25, 0.15) for i in range(3))]
+        for _ in range(2):
+            out, issues = compensate(wires, 0.2, "Auto", "op1")
+            self.assertEqual(len(out), 1)
+            self.assertEqual([i.code for i in issues], ["KERF_COLLAPSE"] * 3)
+
+    def test_small_round_holes_shrink_without_crashing(self) -> None:
+        """Regression: OCC also segfaults shrinking small circles that don't collapse
+        (seen up to about 2 mm at 0.1 mm). They are offset analytically instead."""
+        wires = [_square(0, 0, 50), *(_circle(10 * i + 5, 25, d)
+                                      for i, d in enumerate((0.25, 1.0, 2.0)))]
+        for _ in range(2):
+            (_, *holes), issues = compensate(wires, 0.2, "Auto", "op1")
+            self.assertEqual(issues, [])
+            for hole, d in zip(holes, (0.25, 1.0, 2.0), strict=True):
+                self.assertAlmostEqual(_width(hole), d - 0.2, delta=TOL)
+
+    def test_hole_just_wider_than_kerf_survives(self) -> None:
+        """Only loops that must collapse are dropped."""
+        (_, hole), issues = compensate([_square(0, 0, 50), _circle(25, 25, 0.25)], 0.2,
+                                       "Auto", "op1")
+        self.assertEqual(issues, [])
+        self.assertAlmostEqual(_width(hole), 0.05, delta=TOL)
+
+    def test_diagonal_thin_slots_collapse_through_occ(self) -> None:
+        """A 45° slot narrower than the kerf has a wide bounding box, so OCC decides."""
+        def slot(x):
+            r = 0.07
+            edges = [Part.makeLine(V(0, -r, 0), V(5, -r, 0)),
+                     Part.makeCircle(r, V(5, 0, 0), V(0, 0, 1), -90, 90),
+                     Part.makeLine(V(5, r, 0), V(0, r, 0)),
+                     Part.makeCircle(r, V(0, 0, 0), V(0, 0, 1), 90, 270)]
+            wire = Part.Wire(edges)
+            wire.rotate(V(0, 0, 0), V(0, 0, 1), 45)
+            wire.translate(V(x, 10, 0))
+            return wire
+
+        wires = [_square(0, 0, 50), slot(10), slot(20), slot(30)]
+        out, issues = compensate(wires, 0.2, "Auto", "op1")
+        self.assertEqual(len(out), 1)
+        self.assertEqual(len(issues), 3)
+
     def test_pinched_loop_splits(self) -> None:
         """An inward offset across a waist narrower than the kerf leaves two loops."""
         dumbbell = Part.makePolygon([
