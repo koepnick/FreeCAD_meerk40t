@@ -40,6 +40,7 @@ jobs:
           rm -f tests/gui/result.txt
           status=0
           timeout 600 xvfb-run -a freecad tests/gui/run_all.py || status=$?
+          echo "GUI runner exit status: $status"
           # The GUI swallows stdout, so the runner writes its report to a file. A crash
           # before the report is written must fail the step, not pass it silently.
           if [ ! -s tests/gui/result.txt ]; then
