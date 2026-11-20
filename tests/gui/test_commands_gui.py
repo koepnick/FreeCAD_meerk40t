@@ -170,3 +170,71 @@ class TestExportSendGui(unittest.TestCase):
         FreeCADGui.runCommand("LaserBench_Export")
         self.assertEqual(len(self.warnings), 1)
         self.assertIn("save the document", self.warnings[0])
+
+
+class TestValidationPanelGui(unittest.TestCase):
+    """W-06: the issue list, selecting an issue, and centring the view on its location."""
+
+    def setUp(self) -> None:
+        job_mod.set_preset_resolver(_resolver)
+        self.doc = FreeCAD.newDocument("LBGuiCheck")
+        self.job = job_mod.make_job(self.doc, "co2", "ply3")
+        inside = self.doc.addObject("Sketcher::SketchObject", "Inside")
+        inside.addGeometry(Part.LineSegment(FreeCAD.Vector(10, 10, 0),
+                                            FreeCAD.Vector(40, 10, 0)))  # open: a warning
+        outside = self.doc.addObject("Sketcher::SketchObject", "Outside")
+        outside.addGeometry(Part.Circle(FreeCAD.Vector(700, 100, 0),
+                                        FreeCAD.Vector(0, 0, 1), 5))   # off the bed: error
+        self.open_op = AddOperationPanel(self.doc, [(inside, [])], self.job).create()
+        self.far_op = AddOperationPanel(self.doc, [(outside, [])], self.job).create()
+        self.doc.recompute()
+
+    def tearDown(self) -> None:
+        if FreeCADGui.Control.activeDialog():
+            FreeCADGui.Control.closeDialog()
+        FreeCADGui.Selection.clearSelection()
+        FreeCAD.closeDocument(self.doc.Name)
+        job_mod.set_preset_resolver(None)
+
+    def test_lists_errors_first_and_selects(self) -> None:
+        from laserbench.gui.panels.validation import ValidationPanel, view_centre
+
+        panel = ValidationPanel(self.job)
+        codes = [i.code for i in panel.issues]
+        self.assertEqual(codes[0], "OUT_OF_BOUNDS")
+        self.assertIn("OPEN_CONTOUR", codes)
+        self.assertEqual(panel.list.topLevelItemCount(), len(codes))
+        self.assertIn("error", panel.summary.text())
+        self.assertEqual(panel.list.topLevelItem(0).text(1), self.far_op.Label)
+
+        panel.list.setCurrentItem(panel.list.topLevelItem(0))  # as a click does
+        selected = [s.Object for s in FreeCADGui.Selection.getSelectionEx()]
+        self.assertEqual(selected, [self.far_op])
+        issue = panel.issues[0]
+        self.assertIsNotNone(issue.location)
+        point = panel.marker_point()
+        self.assertIsNotNone(point)
+        view = FreeCADGui.getDocument(self.doc.Name).ActiveView
+        centre = view_centre(view)
+        self.assertAlmostEqual(centre[0], point[0], places=2)
+        self.assertAlmostEqual(centre[1], point[1], places=2)
+        # rear-left origin: machine y is mirrored back onto the job plane
+        self.assertTrue(600 < point[0] < 720 and 80 < point[1] < 120, point)
+        panel.reject()
+        self.assertIsNone(panel.marker_point())
+
+    def test_validate_command_opens_panel(self) -> None:
+        FreeCADGui.Selection.clearSelection()
+        FreeCADGui.Selection.addSelection(self.job)
+        FreeCADGui.runCommand("LaserBench_Validate")
+        self.assertTrue(FreeCADGui.Control.activeDialog())
+
+    def test_no_problems(self) -> None:
+        from laserbench.gui.panels.validation import ValidationPanel
+
+        self.far_op.Enabled = False
+        self.open_op.Enabled = False
+        self.doc.recompute()
+        panel = ValidationPanel(self.job)
+        self.assertEqual(panel.list.topLevelItemCount(), 0)
+        self.assertIn("no problems", panel.summary.text())
