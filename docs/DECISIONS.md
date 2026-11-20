@@ -119,8 +119,8 @@ against the owner's version first.
   keeping visible sharp edges and visible silhouettes. Smooth (tangent) edges are dropped since
   they are not cut lines. HLR keeps superimposed lines (a pocket's rim and floor), so exact
   duplicates (same endpoints, midpoint and length to 0.1 µm) are dropped before chaining into
-  wires. A general fuse would also merge partial overlaps, but it crashes OCC 7.9 on some HLR
-  circle edges. `direction` points from
+  wires. HLR's output edges lack a full 3D representation (`copy()` empties them
+  and a boolean fuse crashed OCC 7.9), so each is rebuilt from its curve first. `direction` points from
   the model towards the viewer, as in TechDraw; the default is the job-plane normal.
 - **Section:** `Part.Shape.slice` at the section height, then dropped to z = 0.
 - **Edge-only shapes** (sketches, edge sources) are always flattened in their own plane,

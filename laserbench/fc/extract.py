@@ -219,7 +219,13 @@ def _project(shape: Part.Shape, direction: FreeCAD.Vector) -> list[Part.Wire]:
     edges: list[Part.Edge] = []
     for part in (hlr.vCompound(), hlr.outLineVCompound()):
         if part is not None and not part.isNull():
-            edges.extend(e for e in part.Edges if e.Length > _LINEAR_TOL)
+            # HLR edges carry no proper 3D representation: copy() and booleans lose or crash
+            # on them, so rebuild each from its curve and parameter range.
+            edges.extend(
+                e.Curve.toShape(e.FirstParameter, e.LastParameter)
+                for e in part.Edges
+                if e.Length > _LINEAR_TOL
+            )
     if not edges:
         return []
     edges = _drop_superimposed(edges)
@@ -231,7 +237,7 @@ def _drop_superimposed(edges: Sequence[Part.Edge]) -> list[Part.Edge]:
     """Remove edges that exactly overlay an earlier one (HLR keeps superimposed lines).
 
     Compared by endpoints (either direction), midpoint and length. A general fuse would also
-    merge partial overlaps, but OCC's boolean crashes on some HLR circle edges (FreeCAD 1.1).
+    merge partial overlaps, at the cost of an OCC boolean on every projection.
     """
 
     def pt(v: FreeCAD.Vector) -> tuple[float, float]:
