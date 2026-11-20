@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
 """Smoke test: FreeCAD and Part load, and the laserbench package imports inside FreeCAD."""
 
 import unittest

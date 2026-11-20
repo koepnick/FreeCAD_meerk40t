@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
 # LaserBench non-GUI initialisation.
 #
 # FreeCAD executes this file for every Mod folder at startup, including in

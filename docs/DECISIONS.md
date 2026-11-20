@@ -17,7 +17,7 @@ Status values: **DECIDED** · **PROPOSED** (default unless the owner objects) ·
 | D-007 | PROPOSED | Expression-bindable overrides for common keys only |
 | D-008 | PROPOSED | IR cache properties are transient |
 | D-009 | PROPOSED | Error signalling from execute() |
-| D-010 | OPEN | Licence |
+| D-010 | DECIDED | Licence |
 | D-011 | OPEN | Project name |
 | D-012 | DECIDED | Minimum FreeCAD version and machine dimensions |
 | D-013 | PROPOSED | Projection API choice (finalised by task G-02) |
@@ -66,9 +66,12 @@ avoids stale data.
 User-correctable problems become validation issues (no exception). Hard failures (e.g. every
 source is broken) raise with a clear message so FreeCAD marks the object as errored in the tree.
 
-### D-010 Licence — OPEN
-Proposed LGPL-2.1-or-later (matches FreeCAD and most addons). MIT is an alternative if
-MeerK40t code might be borrowed later (MeerK40t is MIT). **Owner decides.**
+### D-010 Licence — DECIDED
+**LGPL-2.1-or-later**, chosen by the owner on 2026-11-20. It matches FreeCAD and most addons.
+Full text in `LICENSE`; `package.xml` references it; source files carry
+`# SPDX-License-Identifier: LGPL-2.1-or-later`.
+*Consequence:* MIT-licensed MeerK40t code can still be borrowed (MIT is compatible with LGPL),
+keeping its copyright notice.
 
 ### D-011 Name — OPEN
 "LaserBench" is a working name. Check the Addon Manager index and PyPI for clashes before release.

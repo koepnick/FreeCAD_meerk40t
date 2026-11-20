@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
 """C-01: IR dataclasses, canonical serialisation, and schema_version handling."""
 
 from __future__ import annotations
