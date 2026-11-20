@@ -55,7 +55,7 @@ See ARCHITECTURE §8 (extension points).
 |---|---|---|---|
 | FR-010 | P0 | The user can define **machine profiles**: name, kind (`gantry` or `galvo`), work area (W×H mm), origin convention, default kerf. | Profiles persist across sessions as JSON in FreeCAD's user data dir. |
 | FR-011 | P0 | Galvo profiles define a centred field (e.g. 110×110 mm) with origin at the field centre. Gantry profiles define the origin corner (front-left, rear-left, etc.). | Exported coordinates match the convention. A unit test covers each origin option. |
-| FR-012 | P1 | Ship two default profiles matching the owner's machines (field and bed sizes left `TBD` until the owner confirms). | Defaults load on first run and are user-editable. |
+| FR-012 | P1 | Ship two default profiles matching the owner's machines (sizes in D-012). | Defaults load on first run and are user-editable. |
 | FR-013 | P1 | A preferences page manages profiles (add, edit, duplicate, delete). | All CRUD works without a restart. |
 
 ### 2.3 Material presets
@@ -150,8 +150,8 @@ See ARCHITECTURE §8 (extension points).
 ## 4. Assumptions to confirm (owner)
 
 - A-1 MeerK40t can load an SVG and map operations by stroke colour. *(verify, D-006)*
-- A-2 Galvo field size and gantry bed size: **TBD**, to be supplied by the owner.
-- A-3 The owner's FreeCAD version: **TBD**.
+- A-2 Galvo field 150 × 150 mm; gantry bed 600 × 400 mm, origin rear-left. *(confirmed, D-012)*
+- A-3 The owner's FreeCAD version: 1.1.4 on all machines. *(confirmed, D-012)*
 - A-4 A typical job size is a handful of parts and hundreds, not tens of thousands, of contours.
 
 ## 5. Glossary
