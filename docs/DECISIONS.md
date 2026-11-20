@@ -19,7 +19,7 @@ Status values: **DECIDED** · **PROPOSED** (default unless the owner objects) ·
 | D-009 | PROPOSED | Error signalling from execute() |
 | D-010 | OPEN | Licence |
 | D-011 | OPEN | Project name |
-| D-012 | OPEN | Minimum FreeCAD version and machine dimensions |
+| D-012 | DECIDED | Minimum FreeCAD version and machine dimensions |
 | D-013 | PROPOSED | Projection API choice (finalised by task G-02) |
 | D-014 | DECIDED | Repository root is the FreeCAD addon folder |
 
@@ -73,14 +73,38 @@ MeerK40t code might be borrowed later (MeerK40t is MIT). **Owner decides.**
 ### D-011 Name — OPEN
 "LaserBench" is a working name. Check the Addon Manager index and PyPI for clashes before release.
 
-### D-012 Versions and machine dimensions — OPEN
-Owner to supply: FreeCAD version on the Mac and on Linux; galvo field size (lens-dependent);
-CO2 bed size and origin corner; MeerK40t version.
+### D-012 Versions and machine dimensions — DECIDED
+Supplied by the owner on 2026-11-20.
 
-*Known so far (2026-11-20):* the owner's Linux checkout lives in
-`~/.local/share/FreeCAD/v1-1/Mod/`, so Linux runs **FreeCAD 1.1**. `package.xml` keeps
-`freecadmin` at 1.0.0 (NFR-006) until the Mac version is known. Still needed: the Mac FreeCAD
-version, both machine sizes, the CO2 origin corner, and the MeerK40t version.
+**FreeCAD:** 1.1.4 on every machine (Mac and Linux). LaserBench is developed and CI-tested
+against 1.1.x. `package.xml` keeps `freecadmin` at 1.0.0 because NFR-006 promises
+FreeCAD ≥ 1.0; 1.0 is supported but not CI-tested.
+
+**Galvo:** OMTech 50 W autofocus fiber, 1064 nm, 210 mm field lens.
+| Profile field | Value |
+|---|---|
+| kind | `galvo` |
+| width × height | 150 × 150 mm (manufacturer spec for this lens) |
+| origin | `center` |
+Preset hints from the spec sheet: frequency 30–60 kHz, pulse width 80–120 ns.
+
+**CO2 gantry:** OMTech Maker MF1624-60, 60 W.
+| Profile field | Value |
+|---|---|
+| kind | `gantry` |
+| width × height | 600 × 400 mm (X along the 24 in side) |
+| origin | `rear-left` (the owner's current NW corner) |
+The spec sheet also says 16 × 24 in, which is 406.4 × 609.6 mm. We use the manufacturer's mm
+figure; if the real travel is larger, the owner can enlarge the profile.
+*Origin:* the owner is open to changing it. We keep `rear-left` because it matches SVG's
+top-left origin and MeerK40t's on-screen bed view, so the exported SVG needs no horizontal flip.
+The controller's physical home corner is a MeerK40t device setting and doesn't affect our
+files. Q-03 confirms this on the gantry device profile.
+
+**MeerK40t:** reported as "v.98.1". MeerK40t uses four-digit build numbers (e.g. 0.9.7900,
+0.9.8200), so this is most likely **0.9.81xx** in the 0.9.8 series. The owner can confirm the
+exact build in Help → About. The latest release at the time of writing is 0.9.9000. Q-03 tests
+against the owner's version first.
 
 ### D-013 Projection API — PROPOSED
 Start with `Part.Shape.slice` (Section) and face wires (Face). For Direction, evaluate

@@ -118,7 +118,7 @@ Done: load/save/validate machines.json and materials.json, migrate by version, d
 first run.
 
 **P-02 Default data**: Depends P-01, D-012 · FR-012 · `resources/defaults/*.json`
-(Uses placeholders until the owner supplies dimensions.)
+(Machine data is in DECISIONS D-012.)
 
 **P-03 Handoff runner**: Depends C-03 · FR-074 · `core/handoff.py`
 Done: placeholder substitution, argument-list subprocess, non-blocking, captures launch
