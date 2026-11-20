@@ -140,7 +140,7 @@ class LBProjectionError(ValueError):
 
 _PARALLEL = 1.0 - 1e-9
 _LINEAR_TOL = 1e-7
-_FUSE_TOL = 1e-4  # mm; merges edges HLR reports twice (e.g. a pocket's rim and floor)
+_DEDUPE_DIGITS = 4  # 0.1 µm; edges HLR reports twice (a pocket's rim and floor) match here
 
 
 def _to_plane_rotation(normal: FreeCAD.Vector) -> FreeCAD.Rotation:
@@ -222,11 +222,31 @@ def _project(shape: Part.Shape, direction: FreeCAD.Vector) -> list[Part.Wire]:
             edges.extend(e for e in part.Edges if e.Length > _LINEAR_TOL)
     if not edges:
         return []
-    if len(edges) > 1:
-        # HLR does not remove superimposed lines; a fuzzy general fuse merges them.
-        edges = edges[0].fuse(edges[1:], _FUSE_TOL).Edges
+    edges = _drop_superimposed(edges)
     flat = _drop_to_z0(Part.Compound(edges), FreeCAD.Rotation())
     return _wires_from_edges(flat.Edges)
+
+
+def _drop_superimposed(edges: Sequence[Part.Edge]) -> list[Part.Edge]:
+    """Remove edges that exactly overlay an earlier one (HLR keeps superimposed lines).
+
+    Compared by endpoints (either direction), midpoint and length. A general fuse would also
+    merge partial overlaps, but OCC's boolean crashes on some HLR circle edges (FreeCAD 1.1).
+    """
+
+    def pt(v: FreeCAD.Vector) -> tuple[float, float]:
+        return (round(v.x, _DEDUPE_DIGITS) + 0.0, round(v.y, _DEDUPE_DIGITS) + 0.0)
+
+    seen: set[tuple] = set()
+    kept: list[Part.Edge] = []
+    for edge in edges:
+        first, last = edge.FirstParameter, edge.LastParameter
+        ends = tuple(sorted((pt(edge.valueAt(first)), pt(edge.valueAt(last)))))
+        key = (ends, pt(edge.valueAt((first + last) / 2)), round(edge.Length, _DEDUPE_DIGITS - 1))
+        if key not in seen:
+            seen.add(key)
+            kept.append(edge)
+    return kept
 
 
 def _section(shape: Part.Shape, height: float) -> list[Part.Wire]:
