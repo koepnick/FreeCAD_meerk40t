@@ -35,7 +35,56 @@ def resolve_sources(
     An empty sub-name list means the whole object (sketch, solid or Body).
     Raises LBSourceError for a missing object or sub-element. Never falls back silently.
     """
-    raise NotImplementedError("G-01")
+    resolved: list[tuple[FreeCAD.DocumentObject, str, Part.Shape]] = []
+    for obj, subnames in links:
+        label = _label(obj)
+        parent = _parent_placement(obj, label)
+        for sub in list(subnames) or [""]:
+            shape = _shape_of(obj, sub, label)
+            shape = shape.copy()
+            # Part.getShape includes the object's own Placement; prepend the placements of the
+            # containers (Body, Part) it sits in to land in global coordinates.
+            shape.Placement = parent.multiply(shape.Placement)
+            resolved.append((obj, sub, shape))
+    return resolved
+
+
+def _label(obj: FreeCAD.DocumentObject | None) -> str:
+    """Return a human-readable label, even for a deleted or missing object."""
+    if obj is None:
+        return "<missing>"
+    try:
+        return obj.Label
+    except Exception:  # deleted objects raise on any attribute access
+        return "<deleted>"
+
+
+def _parent_placement(obj: FreeCAD.DocumentObject | None, label: str) -> FreeCAD.Placement:
+    """Placement of the containers around ``obj`` (global placement minus its own)."""
+    try:
+        if obj is None or obj.Document is None:
+            raise ReferenceError("object is not in a document")
+        own = getattr(obj, "Placement", None)
+        if own is None:
+            return FreeCAD.Placement()
+        return obj.getGlobalPlacement().multiply(own.inverse())
+    except Exception as exc:
+        raise LBSourceError(label, "", f"source object is missing ({exc})") from exc
+
+
+def _shape_of(obj: FreeCAD.DocumentObject, sub: str, label: str) -> Part.Shape:
+    """Shape of the whole object (``sub == ""``) or of one sub-element, never a fallback."""
+    # FreeCAD marks sub-elements lost to a topological-naming break with a leading "?".
+    if sub.startswith("?"):
+        raise LBSourceError(label, sub.lstrip("?"), "sub-element no longer exists")
+    try:
+        shape = Part.getShape(obj, sub, needSubElement=bool(sub))
+    except Exception as exc:
+        raise LBSourceError(label, sub, f"cannot resolve ({exc})") from exc
+    if shape is None or shape.isNull():
+        detail = "sub-element no longer exists" if sub else "object has no shape"
+        raise LBSourceError(label, sub, detail)
+    return shape
 
 
 def to_job_plane(
