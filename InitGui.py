@@ -5,20 +5,16 @@
 # laserbench package eagerly: commands import their modules lazily so a
 # broken optional piece never produces a traceback on load (FR-003).
 
-import os
-
 import FreeCAD
 import FreeCADGui
 
-
-def _icon_path() -> str:
-    # FreeCAD runs this file via exec(), so __file__ is not reliable. The
-    # Mod folder that contains this file is on sys.path, and the laserbench
-    # package lives inside it.
-    import laserbench
-
-    return os.path.join(os.path.dirname(laserbench.__file__), "resources", "icons",
-                        "laserbench.svg")
+# FreeCAD runs this file with exec() inside one of its own functions, passing separate
+# globals and locals. Names defined at the top of this file land in those locals, which a
+# class body or a method can't see: a module-level helper called from the class body
+# raised NameError and FreeCAD silently skipped the whole workbench. So everything the
+# class needs is imported or computed inside the class itself. Only FreeCAD and FreeCADGui
+# are safe to use bare, because FreeCAD's own init module already has them as globals.
+# tests/gui/test_initgui_gui.py and tests/install/ guard this.
 
 
 class LaserBenchWorkbench(FreeCADGui.Workbench):
@@ -26,7 +22,17 @@ class LaserBenchWorkbench(FreeCADGui.Workbench):
     ToolTip = FreeCAD.Qt.translate(
         "Workbench", "Turn parametric FreeCAD geometry into laser jobs"
     )
-    Icon = _icon_path()
+
+    def __init__(self) -> None:
+        import os
+
+        import laserbench
+
+        # __file__ is unreliable under exec(); the Mod folder is on sys.path, so locate
+        # the icon through the package instead.
+        self.__class__.Icon = os.path.join(
+            os.path.dirname(laserbench.__file__), "resources", "icons", "laserbench.svg"
+        )
 
     def Initialize(self) -> None:
         # Imported here, not at file level, so a broken piece can't stop FreeCAD starting.
