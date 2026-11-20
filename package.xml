@@ -5,7 +5,7 @@
   <version>0.0.1</version>
   <date>2026-11-20</date>
   <maintainer email="2373951+koepnick@users.noreply.github.com">koepnick</maintainer>
-  <license>LGPL-2.1-or-later</license>
+  <license file="LICENSE">LGPL-2.1-or-later</license>
   <url type="repository" branch="main">https://github.com/koepnick/FreeCAD_meerk40t</url>
   <url type="bugtracker">https://github.com/koepnick/FreeCAD_meerk40t/issues</url>
   <icon>laserbench/resources/icons/laserbench.svg</icon>

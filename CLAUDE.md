@@ -58,7 +58,8 @@ See `docs/REQUIREMENTS.md` §1.3 for the full out-of-scope list.
 - No third-party Python dependencies inside the workbench. FreeCAD's bundled
   interpreter makes pip installs painful for end users.
 - Must run on macOS (Apple Silicon), Linux, and Windows.
-- Licence: see `docs/DECISIONS.md` D-010 (LGPL-2.1-or-later proposed).
+- Licence: LGPL-2.1-or-later (D-010). New source files start with
+  `# SPDX-License-Identifier: LGPL-2.1-or-later`.
 
 ## Commands
 

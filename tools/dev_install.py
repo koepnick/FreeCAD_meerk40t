@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
 """Link this checkout into FreeCAD's user Mod folder for manual testing.
 
 Not needed if you cloned the repository straight into the Mod folder (the repo

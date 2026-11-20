@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
 """LaserBench Intermediate Representation (IR): the machine-neutral laser job.
 
 This module is the executable form of ``docs/IR_SCHEMA.md``. The two must match

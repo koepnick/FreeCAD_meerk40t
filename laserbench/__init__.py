@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
 """LaserBench: a FreeCAD workbench that turns parametric geometry into laser jobs.
 
 This package must stay importable without FreeCAD. Only ``laserbench.fc``,

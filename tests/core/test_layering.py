@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
 """NFR-001: laserbench.core is pure standard-library Python.
 
 Two checks: a static scan of every import in core/, and a real import of every

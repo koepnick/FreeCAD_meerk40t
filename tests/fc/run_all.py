@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
 """Run the FreeCAD-dependent tests under freecadcmd.
 
     freecadcmd tests/fc/run_all.py

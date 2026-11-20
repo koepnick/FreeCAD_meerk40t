@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
 # LaserBench workbench registration.
 #
 # FreeCAD executes this file at GUI startup. Nothing here may import the
