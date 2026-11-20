@@ -9,14 +9,13 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import shutil
-import tempfile
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from laserbench.core.fsutil import atomic_write_text
 from laserbench.core.ir import (
     OP_TYPES,
     SCHEMA_VERSION,
@@ -266,14 +265,5 @@ def _read(path: Path, key: str) -> list[Any]:
 
 def _write(path: Path, key: str, items: list[dict[str, Any]]) -> None:
     """Write via a temporary file in the same folder and an atomic rename."""
-    # core/fsutil.py (K-07) will offer the same; switch to it once it lands.
-    path.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps({"schema_version": SCHEMA_VERSION, key: items}, indent=2) + "\n"
-    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
-            fh.write(text)
-        os.replace(tmp, path)
-    except BaseException:
-        Path(tmp).unlink(missing_ok=True)
-        raise
+    atomic_write_text(path, text)
