@@ -214,11 +214,11 @@ an empty list means no command.
 
 ## 5. SVG export mapping (FR-071, FR-072)
 
-Implemented by `core/export_svg.py` (task K-06). **Provisional:** the colour/layer mapping may
-be adjusted after the MeerK40t spike (Q-03, D-006).
+Implemented by `core/export_svg.py` (task K-06). The MeerK40t additions in §5.1 follow D-006
+(proposed; to be confirmed by Q-03).
 
 - Root: `width="{W}mm" height="{H}mm" viewBox="0 0 {W} {H}"`, where W×H is the machine
-  width×height. One user unit = 1 mm.
+  width×height. One user unit = 1 mm. The first child is `<title>{job name}</title>`.
 - The drawing is the bed or field seen from above, **rear edge at the top**. Exporters convert
   machine-frame coordinates (§2.2) to SVG coordinates (y down) with the origin-specific flip.
 - One `<g>` per operation, in IR order: `id="op-{id}"`,
@@ -226,11 +226,35 @@ be adjusted after the MeerK40t spike (Q-03, D-006).
 - Cut and score: `fill="none"`, `stroke="{colour}"`, hairline `stroke-width="0.025"`.
   Fill (not hatched): `fill="{colour}"`, `stroke="none"`, `fill-rule="evenodd"`, one `<path>`
   per region (outer + holes as subpaths). Hatched fill: stroked like score.
+- Each geometry element has `id="op-{id}-{n}"`, n counting from 1 within the operation
+  (one per path, or one per region for an unhatched fill).
 - Arcs become SVG `A` commands; full circles become two half-arcs.
 - Metadata namespace `xmlns:lb="https://github.com/koepnick/FreeCAD_meerk40t/ns/ir/1"`. Each
   operation group carries `lb:type`, `lb:kerf-mode` and `lb:settings` (canonical compact JSON of
   `settings`). The root carries `lb:schema-version` and `lb:machine`.
 - Numbers are written with the same 4-decimal rounding, trailing zeros stripped.
+
+### 5.1 MeerK40t operation groups (D-006)
+Unless turned off at export, the file also carries one empty top-level `<g>` per operation that
+has geometry, before the layers, in IR order. MeerK40t reads these as its operations; other
+programs ignore them. Attributes are un-namespaced, as MeerK40t writes them:
+
+| Attribute | Value |
+|---|---|
+| `id` | `mk-{id}` |
+| `type` | `op cut` (cut), `op engrave` (score, hatched fill), `op raster` (unhatched fill) |
+| `label` | operation label (id if empty) |
+| `color` | operation colour |
+| `power` | settings `power` × 10 (per mille), if set |
+| `speed` | settings `speed` (mm/s), if set |
+| `passes`, `passes_custom="True"` | settings `passes`, if set and ≥ 1 |
+| `frequency` | settings `frequency` (kHz), if set |
+| `pulse_width`, `pulse_width_enabled="True"` | settings `q_pulse` (ns), galvo only |
+| `dpi` | round(25.4 / `hatch_interval`), `op raster` only |
+| `output` | `True` |
+| `references` | space-separated element ids of the operation |
+
+Settings that are absent or not numbers are left out, so MeerK40t's defaults apply.
 
 ---
 

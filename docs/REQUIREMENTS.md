@@ -149,7 +149,7 @@ See ARCHITECTURE §8 (extension points).
 
 ## 4. Assumptions to confirm (owner)
 
-- A-1 MeerK40t can load an SVG and map operations by stroke colour. *(verify, D-006)*
+- A-1 MeerK40t can load an SVG and map operations by stroke colour. *(D-006: it can, but operation groups in the SVG are more reliable; verify on the owner's build)*
 - A-2 Galvo field 150 × 150 mm; gantry bed 600 × 400 mm, origin rear-left. *(confirmed, D-012)*
 - A-3 The owner's FreeCAD version: 1.1.4 on all machines. *(confirmed, D-012)*
 - A-4 A typical job size is a handful of parts and hundreds, not tens of thousands, of contours.
