@@ -210,7 +210,9 @@ def _project(shape: Part.Shape, direction: FreeCAD.Vector) -> list[Part.Wire]:
 
     algo = Part.HLRBRep.Algo()
     algo.add(viewed)
-    algo.setProjector(Origin=(0, 0, 0), ZDir=(0, 0, 1), XDir=(1, 0, 0))
+    algo.setProjector(
+        Origin=FreeCAD.Vector(0, 0, 0), ZDir=FreeCAD.Vector(0, 0, 1), XDir=FreeCAD.Vector(1, 0, 0)
+    )
     algo.update()
     algo.hide()
     hlr = Part.HLRBRep.HLRToShape(algo)
