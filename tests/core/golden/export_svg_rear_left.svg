@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:lb="https://github.com/koepnick/FreeCAD_meerk40t/ns/ir/1" version="1.1" width="600mm" height="400mm" viewBox="0 0 600 400" lb:schema-version="1" lb:machine="co2">
+  <title>Box lid</title>
+  <g id="mk-Engrave" type="op engrave" label="Logo" color="#0000ff" power="200" speed="200" output="True" references="op-Engrave-1"/>
+  <g id="mk-Fill" type="op raster" label="Panel &lt;fill&gt; &amp; co" color="#00aa00" power="305" dpi="254" output="True" references="op-Fill-1"/>
+  <g id="mk-Cut" type="op cut" label="Outline" color="#ff0000" power="650" speed="20" passes="2" passes_custom="True" output="True" references="op-Cut-1 op-Cut-2 op-Cut-3"/>
+  <g id="op-Engrave" inkscape:groupmode="layer" inkscape:label="0 Logo (score)" lb:type="score" lb:kerf-mode="none" lb:settings='{"power":20,"speed":200}'>
+    <path id="op-Engrave-1" d="M 10 60 L 15 65 L 20 60 L 25 65 A 5 5 0 0 0 35 65 A 5 5 0 1 1 40 70" fill="none" stroke="#0000ff" stroke-width="0.025"/>
+  </g>
+  <g id="op-Fill" inkscape:groupmode="layer" inkscape:label="1 Panel &lt;fill&gt; &amp; co (fill)" lb:type="fill" lb:kerf-mode="none" lb:settings='{"hatch_interval":0.1,"power":30.5}'>
+    <path id="op-Fill-1" d="M 100 100 L 150 100 L 150 150 L 100 150 L 100 100 Z M 135 125 A 10 10 0 0 1 115 125 A 10 10 0 0 1 135 125 Z" fill="#00aa00" stroke="none" fill-rule="evenodd"/>
+  </g>
+  <g id="op-Cut" inkscape:groupmode="layer" inkscape:label="2 Outline (cut)" lb:type="cut" lb:kerf-mode="auto" lb:settings='{"kerf":0.2,"passes":2,"power":65,"speed":20}'>
+    <path id="op-Cut-1" d="M 20 20 L 40 20 A 5 5 0 0 1 40 30 L 20 30 A 5 5 0 0 1 20 20 Z" fill="none" stroke="#ff0000" stroke-width="0.025"/>
+    <path id="op-Cut-2" d="M 0 0 L 100 0 L 100 100 L 0 100 L 0 0 Z" fill="none" stroke="#ff0000" stroke-width="0.025"/>
+    <path id="op-Cut-3" d="M 55 50 A 5 5 0 0 1 45 50 A 5 5 0 0 1 55 50 Z" fill="none" stroke="#ff0000" stroke-width="0.025"/>
+  </g>
+  <g id="op-Empty" inkscape:groupmode="layer" inkscape:label="3 Nothing (cut)" lb:type="cut" lb:kerf-mode="none" lb:settings="{}">
+  </g>
+</svg>

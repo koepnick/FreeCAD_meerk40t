@@ -13,7 +13,7 @@ Status values: **DECIDED** · **PROPOSED** (default unless the owner objects) ·
 | D-003 | DECIDED | Pure-Python core, no third-party deps in the workbench |
 | D-004 | PROPOSED | Arrays expanded in IR (not referenced) |
 | D-005 | PROPOSED | Hatching off by default; downstream fills regions |
-| D-006 | OPEN | How MeerK40t maps SVG colours/layers to operations |
+| D-006 | PROPOSED | How MeerK40t maps SVG colours/layers to operations |
 | D-007 | PROPOSED | Expression-bindable overrides for common keys only |
 | D-008 | PROPOSED | IR cache properties are transient |
 | D-009 | PROPOSED | Error signalling from execute() |
@@ -48,11 +48,53 @@ Default: export fill regions as filled SVG shapes and let MeerK40t hatch them. L
 hatching (FR-052) is an opt-in per operation. *Why:* avoid duplicating mature downstream
 features in the MVP.
 
-### D-006 MeerK40t SVG mapping — OPEN
-Needs a spike (task Q-03): does MeerK40t create one operation per stroke colour on SVG import?
-Does it read Inkscape layer labels? Can operation settings be pre-loaded (e.g. by a console
-command or a saved operations file)? The answer decides how much of FR-072 is useful and
-whether FR-023 is possible. **Owner input:** confirm the MeerK40t version you run.
+### D-006 MeerK40t SVG mapping — PROPOSED
+*Findings (2026-11-20)* from reading MeerK40t's source at tag **0.9.8100**, the only 0.9.81xx
+tag (`meerk40t/core/svg_io.py`, `core/elements/elements.py`, `core/parameters.py`,
+`balormk/controller.py`, `main.py`). Not yet confirmed by loading a file in a running MeerK40t.
+
+1. **Layers are not operations.** An Inkscape layer (`<g inkscape:groupmode="layer">`) loads as
+   a plain group in the Elements tree, named from `inkscape:label`. It does not create or pick
+   an operation.
+2. **Colour classification is the fallback.** If the file carries no operations, MeerK40t
+   classifies each element by stroke colour against the existing operations (exact, then
+   fuzzy), then to "default" operations, then auto-generates one. Filled shapes go to a raster
+   operation. Results depend on the user's existing operations and classification preferences,
+   so colour alone is not a reliable contract.
+3. **Operations can be pre-loaded from the SVG.** MeerK40t's own SVG format stores each
+   operation as a top-level `<g>` with plain (un-namespaced) attributes: `type="op cut"` (or
+   `op engrave`, `op raster`), `id`, `label`, `color`, settings such as `power`, `speed`,
+   `passes`, `passes_custom`, `frequency`, `dpi`, and `references="id1 id2"` listing element
+   ids. On load (File → Open, or a file named on the command line) such groups become real
+   operations holding exactly the referenced elements, and colour classification is skipped.
+   *Side effect:* the user's operations that are empty at load time are removed; operations
+   that already hold elements are kept. This is the same as opening a MeerK40t-saved SVG.
+4. **Units.** MeerK40t `power` is per mille (1000 = 100 %) on both the K40/Ruida and the
+   galvo (Balor/LMC) drivers; `speed` is mm/s; `frequency` is kHz. Galvo pulse width is
+   `pulse_width` (ns) and only applies with `pulse_width_enabled="True"`. Raster line spacing
+   is `dpi`. `passes` only takes effect with `passes_custom="True"`.
+5. **Scale.** An SVG with `width`/`height` in mm and a matching `viewBox` loads at true size.
+   The default "SVG Viewport is Bed" preference only affects files without physical units.
+6. **Command line.** `meerk40t <file.svg>` opens MeerK40t with the file loaded. `-a`/`--auto`
+   starts the laser and must never appear in a send command (P-03 refuses it). If MeerK40t is
+   already running, a second launch asks "Another instance is running!", and answering No
+   loads nothing.
+
+*Decision (proposed):* the SVG keeps the IR_SCHEMA §5 layers (for Inkscape and other
+programs) and adds one MeerK40t operation group per non-empty operation (§5.1), mapping
+cut → `op cut`, score and hatched fill → `op engrave`, unhatched fill → `op raster`, with the
+settings converted as in point 4. Export can turn the groups off. This makes FR-023 largely
+unnecessary for MeerK40t: settings travel with each job.
+
+*Owner to verify on 0.9.81xx* (Q-03 still owns the formal spike):
+- Open an exported SVG: the Operations tree shows one operation per LaserBench operation,
+  in order, with the expected power/speed/passes, each holding the right shapes.
+- The design appears at the right size and place on both device profiles, rear edge at the
+  top. For the galvo, check that the field centre is the job centre and that the
+  orientation matches the lens (MeerK40t has its own flip/rotate device settings).
+- A Fill operation's raster settings (`dpi`, power) are sensible on the galvo, or whether a
+  hatch is preferred there.
+- Exact build number from Help → About.
 
 ### D-007 Overrides — PROPOSED
 `power`, `speed`, `passes`, and `frequency` get real float properties (expression-bindable).
