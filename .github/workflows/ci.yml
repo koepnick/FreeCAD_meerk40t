@@ -52,3 +52,8 @@ jobs:
           cat tests/gui/result.txt
           grep -qx "OK" tests/gui/result.txt
           [ "$status" -eq 0 ]
+      - name: Real Mod-folder install loads the workbench (xvfb)
+        # tests/gui puts the repo on sys.path itself, so it never runs InitGui.py the way
+        # FreeCAD does at startup. This installs the addon into a throwaway user Mod folder
+        # and starts the real GUI, which is how a NameError in InitGui.py slipped through.
+        run: xvfb-run -a python tests/install/check_mod_install.py

@@ -30,3 +30,14 @@ Run commands from the repository root. `run_all.py` discovers `tests/fc/test_*.p
 ## CI
 `.github/workflows/ci.yml` runs ruff + the core suite on CPython 3.11, and the fc suite under
 `freecadcmd` from conda-forge's `freecad` package.
+
+### Install check (real Mod folder)
+`tests/gui` puts the repository on `sys.path` itself, so it never runs `InitGui.py` the way
+FreeCAD does at startup (via `exec()` with separate globals and locals). The install check
+copies the repo into a throwaway `~/.local/share/FreeCAD/v1-1/Mod/FreeCAD_meerk40t`, starts the
+real GUI and fails unless the LaserBench workbench is listed, activates and registers its
+commands. Run it after touching `InitGui.py`, `Init.py` or `package.xml`:
+
+```bash
+xvfb-run -a python tests/install/check_mod_install.py [--freecad /path/to/freecad]
+```
