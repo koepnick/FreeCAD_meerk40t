@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "machines": [
+    {
+      "id": "co2-mf1624",
+      "name": "OMTech MF1624-60 (CO2 60 W)",
+      "kind": "gantry",
+      "width": 600.0,
+      "height": 400.0,
+      "origin": "rear-left",
+      "default_kerf": 0.2,
+      "send_command": []
+    },
+    {
+      "id": "fiber-50w",
+      "name": "OMTech 50 W fiber (210 mm lens)",
+      "kind": "galvo",
+      "width": 150.0,
+      "height": 150.0,
+      "origin": "center",
+      "default_kerf": 0.03,
+      "send_command": []
+    }
+  ]
+}
