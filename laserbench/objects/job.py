@@ -226,3 +226,35 @@ def get_ir(job_obj: FreeCAD.DocumentObject) -> IRJob:
         summary = "; ".join(job_obj.ValidationSummary) or "recompute failed"
         raise ValueError(f"{job_obj.Label} has no IR: {summary}")
     return IRJob.from_json(job_obj.IRCache)
+
+
+def jobs_in(doc: FreeCAD.Document) -> list[FreeCAD.DocumentObject]:
+    """Every LaserJob in ``doc``, in document order."""
+    return [o for o in doc.Objects
+            if getattr(getattr(o, "Proxy", None), "Type", None) == LaserJob.Type]
+
+
+def ordered_operations(job_obj: FreeCAD.DocumentObject) -> list[FreeCAD.DocumentObject]:
+    """The job's operations sorted the way they run: by Order, then list position."""
+    ops = list(job_obj.Operations)
+    return sorted(ops, key=lambda o: (getattr(o, "Order", 0), ops.index(o)))
+
+
+def move_operation(job_obj: FreeCAD.DocumentObject, op_obj: FreeCAD.DocumentObject,
+                   delta: int) -> bool:
+    """Move an operation ``delta`` places earlier (<0) or later (>0) in the run order.
+
+    Renumbers Order to 0..n-1 and keeps the Operations list (the tree order) in step.
+    Returns False when the operation is already at that end.
+    """
+    ops = ordered_operations(job_obj)
+    i = ops.index(op_obj)
+    j = max(0, min(len(ops) - 1, i + delta))
+    if i == j:
+        return False
+    ops.insert(j, ops.pop(i))
+    for n, op in enumerate(ops):
+        if op.Order != n:
+            op.Order = n
+    job_obj.Operations = ops
+    return True
