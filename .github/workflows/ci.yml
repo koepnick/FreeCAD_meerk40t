@@ -34,3 +34,18 @@ jobs:
           activate-environment: fc
       - run: conda install -y "freecad=1.1"
       - run: freecadcmd tests/fc/run_all.py
+      - name: GUI smoke tests (xvfb)
+        run: |
+          command -v xvfb-run || (sudo apt-get update && sudo apt-get install -y xvfb)
+          rm -f tests/gui/result.txt
+          status=0
+          timeout 600 xvfb-run -a freecad tests/gui/run_all.py || status=$?
+          # The GUI swallows stdout, so the runner writes its report to a file. A crash
+          # before the report is written must fail the step, not pass it silently.
+          if [ ! -s tests/gui/result.txt ]; then
+            echo "tests/gui/result.txt missing or empty: the GUI test runner crashed"
+            exit 1
+          fi
+          cat tests/gui/result.txt
+          grep -qx "OK" tests/gui/result.txt || exit 1
+          exit $status
