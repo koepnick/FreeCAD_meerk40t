@@ -18,7 +18,7 @@ Status values: **DECIDED** · **PROPOSED** (default unless the owner objects) ·
 | D-008 | PROPOSED | IR cache properties are transient |
 | D-009 | PROPOSED | Error signalling from execute() |
 | D-010 | DECIDED | Licence |
-| D-011 | OPEN | Project name |
+| D-011 | DECIDED | Project name |
 | D-012 | DECIDED | Minimum FreeCAD version and machine dimensions |
 | D-013 | PROPOSED | Projection API choice (finalised by task G-02) |
 | D-014 | DECIDED | Repository root is the FreeCAD addon folder |
@@ -73,8 +73,10 @@ Full text in `LICENSE`; `package.xml` references it; source files carry
 *Consequence:* MIT-licensed MeerK40t code can still be borrowed (MIT is compatible with LGPL),
 keeping its copyright notice.
 
-### D-011 Name — OPEN
-"LaserBench" is a working name. Check the Addon Manager index and PyPI for clashes before release.
+### D-011 Name — DECIDED
+**LaserBench**, chosen by the owner on 2026-11-20. Clash check on 2026-11-20: no `laserbench`
+project on PyPI (404) and no FreeCAD addon of that name in the FreeCAD-addons index or a web
+search. Re-check the Addon Manager index just before the first public release.
 
 ### D-012 Versions and machine dimensions — DECIDED
 Supplied by the owner on 2026-11-20.
