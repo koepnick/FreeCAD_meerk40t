@@ -19,7 +19,7 @@ def QT_TRANSLATE_NOOP(context: str, text: str) -> str:  # noqa: N802 - Qt's name
     return text
 
 
-#: Every command the workbench will have. Validate arrives with W-06.
+#: Every command the workbench has, in toolbar order.
 COMMANDS: tuple[str, ...] = (
     "LaserBench_CreateJob",
     "LaserBench_AddOperation",
@@ -259,9 +259,33 @@ def export_message(job: Any, files: dict[str, Any]) -> str:
         job=job.Label, files=names, folder=folder)
     warnings = sum(1 for i in get_ir(job).issues if i.severity == "warning")
     if warnings:
-        text += translate("LaserBench", " ({n} warning(s), see the job's ValidationSummary)"
+        text += translate("LaserBench", " ({n} warning(s), use Check job to see them)"
                           ).format(n=warnings)
     return text
+
+
+class Validate:
+    """Recompute the job and list its problems (FR-060)."""
+
+    def GetResources(self) -> dict[str, str]:  # noqa: N802
+        return {"Pixmap": _icon(),
+                "MenuText": QT_TRANSLATE_NOOP("LaserBench_Validate", "Check job"),
+                "ToolTip": QT_TRANSLATE_NOOP(
+                    "LaserBench_Validate",
+                    "Recompute the job and list problems such as shapes outside the bed or "
+                    "open cut contours")}
+
+    def IsActive(self) -> bool:  # noqa: N802
+        return _job_for_command() is not None and _no_dialog_open()
+
+    def Activated(self) -> None:  # noqa: N802
+        from laserbench.gui.panels.validation import ValidationPanel
+
+        job = _job_for_command()
+        if job is None:
+            return
+        job.Document.recompute()
+        _show(ValidationPanel(job))
 
 
 class Export:
@@ -343,6 +367,7 @@ _IMPLEMENTED: dict[str, type] = {
     "LaserBench_MoveOperationUp": MoveOperationUp,
     "LaserBench_MoveOperationDown": MoveOperationDown,
     "LaserBench_ToggleOperation": ToggleOperation,
+    "LaserBench_Validate": Validate,
     "LaserBench_Export": Export,
     "LaserBench_Send": Send,
 }
