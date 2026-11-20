@@ -3,11 +3,15 @@
 
 from __future__ import annotations
 
+import FreeCAD
 import Part
 
 from laserbench.core.ir import IRIssue
+from laserbench.fc.to_ir import nesting
 
 KERF_MODES = ("Auto", "Outside", "Inside", "None")
+
+_MIN_AREA = 1e-9  # mm²; an offset face smaller than this has collapsed
 
 
 def compensate(
@@ -18,5 +22,53 @@ def compensate(
     Auto: outer boundaries outward, holes inward (nesting-depth parity decides).
     Open wires pass through unchanged. A loop whose offset vanishes is dropped and
     reported as KERF_COLLAPSE.
+
+    Outside grows every loop and Inside shrinks every loop, regardless of nesting.
+    An inward offset that pinches a loop into several pieces returns all of them.
     """
-    raise NotImplementedError("G-03")
+    if mode not in KERF_MODES:
+        raise ValueError(f"unknown kerf mode {mode!r}")
+    if kerf < 0:
+        raise ValueError(f"kerf must not be negative, got {kerf}")
+    if mode == "None" or kerf == 0:
+        return list(wires), []
+
+    closed = [w for w in wires if w.isClosed()]
+    depths, _ = nesting(closed)
+    half = kerf / 2
+    out: list[Part.Wire] = []
+    issues: list[IRIssue] = []
+    closed_iter = iter(zip(closed, depths, strict=True))
+    for wire in wires:
+        if not wire.isClosed():
+            out.append(wire)
+            continue
+        _, depth = next(closed_iter)
+        grow = {"Outside": True, "Inside": False}.get(mode, depth % 2 == 0)
+        offset = _offset(wire, half if grow else -half)
+        if offset:
+            out.extend(offset)
+        else:
+            centre = wire.BoundBox.Center
+            issues.append(IRIssue(
+                code="KERF_COLLAPSE",
+                message=(f"A loop about {_size(wire):.3g} mm across vanishes when offset "
+                         f"inward by half the {kerf:g} mm kerf; it was left out."),
+                operation_id=operation_id,
+                location=(centre.x, centre.y),
+            ))
+    return out, issues
+
+
+def _offset(wire: Part.Wire, distance: float) -> list[Part.Wire]:
+    """Offset one closed planar wire; an empty list means the loop collapsed."""
+    try:
+        result = Part.Face(wire).makeOffset2D(distance, 0, False, False, False)
+    except (Part.OCCError, FreeCAD.Base.CADKernelError):
+        return []  # OCC raises when an inward offset consumes the whole face
+    return [f.OuterWire for f in result.Faces if f.Area > _MIN_AREA]
+
+
+def _size(wire: Part.Wire) -> float:
+    bb = wire.BoundBox
+    return min(bb.XLength, bb.YLength)
