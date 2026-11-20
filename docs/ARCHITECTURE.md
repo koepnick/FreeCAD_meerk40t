@@ -154,7 +154,7 @@ load_profiles() / save_profiles(...) / load_presets() / save_presets(...)
 | `laserbench/core/**` (everything else) | core-dev |
 | `laserbench/fc/**` | geometry-dev |
 | `laserbench/objects/**`, `laserbench/api.py` | workbench-dev |
-| `laserbench/gui/**`, `laserbench/resources/**`, `InitGui.py`, `Init.py`, `package.xml` | workbench-dev |
+| `laserbench/gui/**`, `laserbench/resources/**`, root `InitGui.py`, `Init.py`, `package.xml` | workbench-dev |
 | `laserbench/core/presets.py`, `laserbench/core/handoff.py`, `resources/defaults/*.json` | presets-dev |
 | `tests/core/**` | core-dev (+ presets-dev for their modules) |
 | `tests/fc/**`, `tests/fixtures/**` | qa |

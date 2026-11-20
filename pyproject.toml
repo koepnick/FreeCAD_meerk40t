@@ -1,0 +1,33 @@
+# Tooling configuration only. LaserBench is installed as a FreeCAD Mod folder,
+# not as a pip package (see CLAUDE.md "Repository layout").
+[project]
+name = "laserbench"
+version = "0.0.1"
+description = "FreeCAD workbench that turns parametric geometry into laser jobs"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".git", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["laserbench"]
+# FreeCAD's modules come from the FreeCAD install, not site-packages.
+known-third-party = ["FreeCAD", "FreeCADGui", "Part", "PySide"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/core"]
+pythonpath = ["."]
+addopts = "-ra"
+
+[tool.coverage.run]
+source = ["laserbench/core"]
+branch = true

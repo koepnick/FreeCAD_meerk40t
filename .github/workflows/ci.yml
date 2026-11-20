@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  core:
+    name: core tests + lint (CPython 3.11)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install "pytest>=8" "pytest-cov>=5" "ruff>=0.6"
+      - run: ruff check .
+      - run: pytest tests/core -q --cov=laserbench/core --cov-report=term-missing
+
+  freecad:
+    name: FreeCAD tests (freecadcmd, conda-forge)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          channels: conda-forge
+          channel-priority: strict
+          activate-environment: fc
+      - run: conda install -y "freecad>=1.0"
+      - run: freecadcmd tests/fc/run_all.py
