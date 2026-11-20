@@ -16,6 +16,8 @@ jobs:
           python-version: "3.11"
       - run: pip install "pytest>=8" "pytest-cov>=5" "ruff>=0.6"
       - run: ruff check .
+      - name: Version metadata agrees (package.xml, __version__, pyproject, CHANGELOG)
+        run: python tools/version.py check
       - run: pytest tests/core -q --cov=laserbench/core --cov-report=term-missing
 
   freecad:

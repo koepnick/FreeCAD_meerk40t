@@ -10,7 +10,7 @@ description of the job, and can open the SVG in your laser program (MeerK40t fir
 LaserBench never talks to a laser. It writes files and, if you ask it to, launches a program
 you have configured. You always check and start the job yourself in that program.
 
-> **Status: early (0.0.1), not yet tested on real hardware.** The workbench, its commands and
+> **Status: early (0.x), not yet tested on real hardware.** The workbench, its commands and
 > the export are covered by automated tests on FreeCAD 1.1, but no LaserBench file has yet
 > been cut on a real machine or confirmed in a running copy of MeerK40t. Treat every output as
 > something to preview and check before you fire the laser. See "Known limitations" below.
@@ -36,7 +36,8 @@ LaserBench is not in the official FreeCAD addon index yet, so add it as a custom
 3. Open **Tools → Addon manager**, find **LaserBench**, and click **Install**.
 4. Restart FreeCAD.
 
-Updates then appear in the Addon Manager like any other addon.
+Updates then appear in the Addon Manager like any other addon. The version shown there
+comes from `package.xml`; what changed in each version is in [CHANGELOG.md](CHANGELOG.md).
 
 ### Manual install (git clone)
 
