@@ -2,7 +2,7 @@
 <package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
   <name>LaserBench</name>
   <description>Turn parametric FreeCAD geometry into laser jobs (SVG and JSON) for MeerK40t and other laser software.</description>
-  <version>0.0.1</version>
+  <version>0.1.0</version>
   <date>2026-11-20</date>
   <maintainer email="2373951+koepnick@users.noreply.github.com">koepnick</maintainer>
   <license file="LICENSE">LGPL-2.1-or-later</license>

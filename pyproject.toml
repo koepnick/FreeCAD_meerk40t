@@ -2,7 +2,7 @@
 # not as a pip package (see CLAUDE.md "Repository layout").
 [project]
 name = "laserbench"
-version = "0.0.1"
+version = "0.1.0"
 description = "FreeCAD workbench that turns parametric geometry into laser jobs"
 requires-python = ">=3.11"
 dependencies = []

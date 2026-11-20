@@ -22,6 +22,7 @@ Status values: **DECIDED** · **PROPOSED** (default unless the owner objects) ·
 | D-012 | DECIDED | Minimum FreeCAD version and machine dimensions |
 | D-013 | DECIDED | Projection API choice (finalised by task G-02) |
 | D-014 | DECIDED | Repository root is the FreeCAD addon folder |
+| D-015 | DECIDED | Versioning and releases |
 
 ---
 
@@ -180,3 +181,14 @@ root, and the code is the `laserbench/` package inside it. Docs move under `docs
 *Why:* the owner clones the repo directly into FreeCAD's `Mod/` folder, and the Addon Manager
 also installs a repository's root as the addon folder (FR-002). `tools/dev_install.py` remains
 for checkouts elsewhere.
+
+### D-015 Versioning — DECIDED
+Semantic versioning (`MAJOR.MINOR.PATCH`, no suffixes), starting at **0.1.0** because nothing
+has been tested on real hardware yet. `package.xml` is the source of truth; `laserbench.__version__`
+and `pyproject.toml` repeat it, and `tools/version.py` plus `tests/core/test_version.py` keep
+them in step. Releases are tagged `vX.Y.Z` on `main` with a GitHub release and a
+`CHANGELOG.md` section. Process in `docs/RELEASING.md`.
+*Why:* the owner asked for a meaningful version in the Addon Manager, which shows
+`package.xml`'s `<version>`. The Addon Manager flags updates for git installs by commit and for
+zip installs by version string inequality, so the version must change whenever a change
+should reach zip users.
