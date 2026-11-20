@@ -117,3 +117,56 @@ class TestCommandsGui(unittest.TestCase):
         FreeCADGui.runCommand("LaserBench_ToggleOperation")
         self.assertFalse(b.Enabled)
         FreeCADGui.Selection.clearSelection()
+
+
+class TestExportSendGui(unittest.TestCase):
+    """W-07: the Export and Send commands in the GUI. Dialogs are captured, not shown."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        commands.register_commands()
+
+    def setUp(self) -> None:
+        import tempfile
+
+        job_mod.set_preset_resolver(_resolver)  # the CO2 profile has no send command
+        self.doc = FreeCAD.newDocument("LBGuiExport")
+        self.tmp = Path(tempfile.mkdtemp(prefix="lb-gui-"))
+        self.warnings: list[str] = []
+        self._warn = commands._warn
+        commands._warn = lambda title, text: self.warnings.append(text)
+        self.job = job_mod.make_job(self.doc, "co2", "ply3")
+        self.job.Label = "Lid"
+        self.job.OutputDir = str(self.tmp)
+        sketch = self.doc.addObject("Sketcher::SketchObject", "Sketch")
+        sketch.addGeometry(Part.Circle(FreeCAD.Vector(20, 20, 0), FreeCAD.Vector(0, 0, 1), 5))
+        AddOperationPanel(self.doc, [(sketch, [])], self.job).create()
+        self.doc.recompute()
+        FreeCADGui.Selection.clearSelection()
+        FreeCADGui.Selection.addSelection(self.job)
+
+    def tearDown(self) -> None:
+        commands._warn = self._warn
+        FreeCADGui.Selection.clearSelection()
+        FreeCAD.closeDocument(self.doc.Name)
+        job_mod.set_preset_resolver(None)
+
+    def test_export_command(self) -> None:
+        FreeCADGui.runCommand("LaserBench_Export")
+        self.assertEqual(self.warnings, [])
+        self.assertTrue((self.tmp / "Lid.svg").is_file())
+        self.assertTrue((self.tmp / "Lid.json").is_file())
+        bar = FreeCADGui.getMainWindow().statusBar().currentMessage()
+        self.assertIn("Lid.svg", bar)
+
+    def test_send_without_command_explains(self) -> None:
+        FreeCADGui.runCommand("LaserBench_Send")
+        self.assertTrue((self.tmp / "Lid.svg").is_file())
+        self.assertEqual(len(self.warnings), 1)
+        self.assertIn("no send command", self.warnings[0])
+
+    def test_export_errors_are_shown(self) -> None:
+        self.job.OutputDir = ""  # unsaved document and no folder
+        FreeCADGui.runCommand("LaserBench_Export")
+        self.assertEqual(len(self.warnings), 1)
+        self.assertIn("save the document", self.warnings[0])
