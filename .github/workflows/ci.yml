@@ -48,5 +48,7 @@ jobs:
             exit 1
           fi
           cat tests/gui/result.txt
+          tail -c 40 tests/gui/result.txt | od -c
+          set -x
           grep -qx "OK" tests/gui/result.txt || exit 1
           exit $status
