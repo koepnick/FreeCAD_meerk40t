@@ -19,7 +19,7 @@ def QT_TRANSLATE_NOOP(context: str, text: str) -> str:  # noqa: N802 - Qt's name
     return text
 
 
-#: Every command the workbench will have. Validate, Export and Send arrive with W-06/W-07.
+#: Every command the workbench will have. Validate arrives with W-06.
 COMMANDS: tuple[str, ...] = (
     "LaserBench_CreateJob",
     "LaserBench_AddOperation",
@@ -228,12 +228,123 @@ class ToggleOperation:
         doc.recompute()
 
 
+def _job_for_command() -> Any | None:
+    doc = FreeCAD.ActiveDocument
+    return target_job(_selection(), doc) if doc is not None else None
+
+
+def _report(text: str) -> None:
+    """Report View line plus a status-bar message the user notices without a dialog."""
+    import FreeCADGui
+
+    FreeCAD.Console.PrintMessage(text + "\n")
+    FreeCADGui.getMainWindow().statusBar().showMessage(text, 10000)
+
+
+def _warn(title: str, text: str) -> None:
+    import FreeCADGui
+    from PySide import QtGui
+
+    FreeCAD.Console.PrintWarning(text + "\n")
+    QtGui.QMessageBox.warning(FreeCADGui.getMainWindow(), title, text)
+
+
+def export_message(job: Any, files: dict[str, Any]) -> str:
+    """One line for the user: what was written where, and any warnings left."""
+    from laserbench.objects.job import get_ir
+
+    names = ", ".join(p.name for p in files.values())
+    folder = next(iter(files.values())).parent
+    text = translate("LaserBench", "{job}: exported {files} to {folder}").format(
+        job=job.Label, files=names, folder=folder)
+    warnings = sum(1 for i in get_ir(job).issues if i.severity == "warning")
+    if warnings:
+        text += translate("LaserBench", " ({n} warning(s), see the job's ValidationSummary)"
+                          ).format(n=warnings)
+    return text
+
+
+class Export:
+    """Export the job's files: SVG and IR JSON (FR-070 to FR-072, FR-075)."""
+
+    def GetResources(self) -> dict[str, str]:  # noqa: N802
+        return {"Pixmap": _icon(),
+                "MenuText": QT_TRANSLATE_NOOP("LaserBench_Export", "Export job"),
+                "ToolTip": QT_TRANSLATE_NOOP(
+                    "LaserBench_Export",
+                    "Write the job's SVG and JSON files to its output folder")}
+
+    def IsActive(self) -> bool:  # noqa: N802
+        return _job_for_command() is not None
+
+    def Activated(self) -> None:  # noqa: N802
+        from laserbench import api
+
+        job = _job_for_command()
+        if job is None:
+            return
+        try:
+            files = api.export(job)
+        except api.ExportError as exc:
+            _warn(translate("LaserBench", "Export"), str(exc))
+            return
+        _report(export_message(job, files))
+
+
+class Send:
+    """Export, then open the files in the machine's laser program (FR-074).
+
+    Opening is all it does: the user checks the job and starts it in the laser program.
+    """
+
+    def GetResources(self) -> dict[str, str]:  # noqa: N802
+        return {"Pixmap": _icon(),
+                "MenuText": QT_TRANSLATE_NOOP("LaserBench_Send", "Send to laser program"),
+                "ToolTip": QT_TRANSLATE_NOOP(
+                    "LaserBench_Send",
+                    "Export the job and open it in the program set in the machine profile "
+                    "(e.g. MeerK40t). The laser does not start until you start it there.")}
+
+    def IsActive(self) -> bool:  # noqa: N802
+        return _job_for_command() is not None
+
+    def Activated(self) -> None:  # noqa: N802
+        from laserbench import api
+        from laserbench.core.handoff import HandoffError
+        from laserbench.objects.job import presets_dir
+
+        job = _job_for_command()
+        if job is None:
+            return
+        title = translate("LaserBench", "Send to laser program")
+        try:
+            proc = api.send(job)
+        except (api.ExportError, HandoffError) as exc:
+            _warn(title, str(exc))
+            return
+        files = api.output_paths(job)
+        if proc is None:
+            _warn(title, translate(
+                "LaserBench",
+                "{msg}\n\nThe machine profile {machine!r} has no send command, so nothing "
+                "was opened. Add one to {path}, for example \"send_command\": "
+                "[\"meerk40t\", \"{{svg}}\"].").format(
+                    msg=export_message(job, files), machine=job.MachineProfile,
+                    path=presets_dir() / "machines.json"))
+            return
+        _report(export_message(job, files) + translate(
+            "LaserBench", ". Opened in the laser program: check it there and start the job "
+            "yourself."))
+
+
 _IMPLEMENTED: dict[str, type] = {
     "LaserBench_CreateJob": CreateJob,
     "LaserBench_AddOperation": AddOperation,
     "LaserBench_MoveOperationUp": MoveOperationUp,
     "LaserBench_MoveOperationDown": MoveOperationDown,
     "LaserBench_ToggleOperation": ToggleOperation,
+    "LaserBench_Export": Export,
+    "LaserBench_Send": Send,
 }
 
 
